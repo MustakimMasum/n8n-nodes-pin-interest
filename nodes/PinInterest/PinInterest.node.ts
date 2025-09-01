@@ -5,7 +5,8 @@ import type {
   INodeType,
   INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
+import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+
 
 export class PinInterest implements INodeType {
   description: INodeTypeDescription = {
@@ -122,7 +123,7 @@ export class PinInterest implements INodeType {
         name: 'limit',
         type: 'number',
         description: 'Max number of results to return',
-        typeOptions: { minValue: 1, maxValue: 250 },
+        typeOptions: { minValue: 1},
         default: 50,
         displayOptions: {
           show: { resource: ['board'], operation: ['getAll'], returnAll: [false] },
@@ -244,7 +245,7 @@ export class PinInterest implements INodeType {
         displayName: 'Limit',
         name: 'pinLimit',
         type: 'number',
-        typeOptions: { minValue: 1, maxValue: 250 },
+        typeOptions: { minValue: 1},
         default: 50,
         displayOptions: {
           show: { resource: ['pin'], pinOperation: ['getMany'], pinReturnAll: [false] },
@@ -341,7 +342,13 @@ export class PinInterest implements INodeType {
           } else {
             const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
             const binary = items[i].binary?.[binaryPropertyName];
-            if (!binary?.data) throw new Error(`Binary property "${binaryPropertyName}" is missing`);
+            if (!binary?.data) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Binary property "${binaryPropertyName}" is missing`,
+								{ itemIndex: i },
+							);
+						}
             media_source = {
               source_type: 'image_base64',
               content_type: binary.mimeType || 'image/jpeg',
