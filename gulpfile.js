@@ -3,7 +3,7 @@ const path = require('path');
 const { src, dest, series } = require('gulp');
 
 function copyNodeIcons() {
-  const nodeSource = path.resolve('nodes', 'PinInterest', '*.{png,svg}');
+  const nodeSource = path.resolve('nodes', '**', '*.{png,svg}');
   const nodeDestination = path.resolve('dist', 'nodes');
   // allowEmpty avoids errors if no icons exist yet
   return src(nodeSource, { allowEmpty: true }).pipe(dest(nodeDestination));
