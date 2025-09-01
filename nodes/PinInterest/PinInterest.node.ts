@@ -1,5 +1,11 @@
 // File: packages/nodes-base/nodes/PinInterest/PinInterest.node.ts
-import type { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, INodeProperties } from 'n8n-workflow';
+import type {
+  IExecuteFunctions,
+  INodeExecutionData,
+  INodeType,
+  INodeTypeDescription,
+} from 'n8n-workflow';
+import { NodeConnectionType } from 'n8n-workflow';
 
 export class PinInterest implements INodeType {
   description: INodeTypeDescription = {
@@ -10,8 +16,8 @@ export class PinInterest implements INodeType {
     version: 1,
     description: 'Work with Pinterest API v5 (boards & pins)',
     defaults: { name: 'Pin-Interest' },
-    inputs: ['main'],
-    outputs: ['main'],
+    inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
     credentials: [
       {
         name: 'pinInterestOAuth2Api',
