@@ -1,4 +1,4 @@
-// File: packages/nodes-base/nodes/PinInterest/PinInterest.node.ts
+// File: nodes/PinInterest/PinInterest.node.ts
 import type {
   IExecuteFunctions,
   INodeExecutionData,
@@ -17,11 +17,12 @@ export class PinInterest implements INodeType {
     description: 'Work with Pinterest API v5 (boards & pins)',
     defaults: { name: 'Pin-Interest' },
     inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+    outputs: [NodeConnectionType.Main],
     credentials: [
       {
         name: 'pinInterestOAuth2Api',
         required: true,
+        // you can omit displayOptions here; keeping it is harmless
         displayOptions: { show: { authentication: ['oAuth2'] } },
       },
     ],
@@ -31,9 +32,7 @@ export class PinInterest implements INodeType {
         displayName: 'Authentication',
         name: 'authentication',
         type: 'options',
-        options: [
-          { name: 'OAuth2', value: 'oAuth2' },
-        ],
+        options: [{ name: 'OAuth2', value: 'oAuth2' }],
         default: 'oAuth2',
       },
 
@@ -42,6 +41,7 @@ export class PinInterest implements INodeType {
         displayName: 'Resource',
         name: 'resource',
         type: 'options',
+        noDataExpression: true,
         options: [
           { name: 'Board', value: 'board' },
           { name: 'Pin', value: 'pin' },
@@ -57,10 +57,26 @@ export class PinInterest implements INodeType {
         name: 'operation',
         displayOptions: { show: { resource: ['board'] } },
         type: 'options',
+        noDataExpression: true,
         options: [
-          { name: 'Create', value: 'create', description: 'Create a new board' },
-          { name: 'Get Many', value: 'getAll', description: 'List boards' },
-          { name: 'Get', value: 'get', description: 'Get a single board' },
+          {
+            name: 'Create',
+            value: 'create',
+            description: 'Create a new board',
+            action: 'Create a board',
+          },
+          {
+            name: 'Get Many',
+            value: 'getAll',
+            description: 'List boards',
+            action: 'List boards',
+          },
+          {
+            name: 'Get',
+            value: 'get',
+            description: 'Get a single board',
+            action: 'Get a board',
+          },
         ],
         default: 'getAll',
       },
@@ -97,6 +113,7 @@ export class PinInterest implements INodeType {
         displayName: 'Return All',
         name: 'returnAll',
         type: 'boolean',
+        description: 'Whether to return all results or only up to a given limit',
         default: false,
         displayOptions: { show: { resource: ['board'], operation: ['getAll'] } },
       },
@@ -104,9 +121,12 @@ export class PinInterest implements INodeType {
         displayName: 'Limit',
         name: 'limit',
         type: 'number',
+        description: 'Max number of results to return',
         typeOptions: { minValue: 1, maxValue: 250 },
         default: 50,
-        displayOptions: { show: { resource: ['board'], operation: ['getAll'], returnAll: [false] } },
+        displayOptions: {
+          show: { resource: ['board'], operation: ['getAll'], returnAll: [false] },
+        },
       },
 
       // ----------------------------------
@@ -173,7 +193,9 @@ export class PinInterest implements INodeType {
         name: 'imageUrl',
         type: 'string',
         required: true,
-        displayOptions: { show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['imageUrl'] } },
+        displayOptions: {
+          show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['imageUrl'] },
+        },
         default: '',
       },
       {
@@ -183,7 +205,9 @@ export class PinInterest implements INodeType {
         placeholder: 'data',
         description: 'Name of the binary property that contains the image',
         required: true,
-        displayOptions: { show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['binary'] } },
+        displayOptions: {
+          show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['binary'] },
+        },
         default: 'data',
       },
       {
@@ -192,7 +216,9 @@ export class PinInterest implements INodeType {
         type: 'string',
         typeOptions: { rows: 4 },
         required: true,
-        displayOptions: { show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['base64'] } },
+        displayOptions: {
+          show: { resource: ['pin'], pinOperation: ['create'], mediaSource: ['base64'] },
+        },
         default: '',
       },
 
@@ -220,7 +246,9 @@ export class PinInterest implements INodeType {
         type: 'number',
         typeOptions: { minValue: 1, maxValue: 250 },
         default: 50,
-        displayOptions: { show: { resource: ['pin'], pinOperation: ['getMany'], pinReturnAll: [false] } },
+        displayOptions: {
+          show: { resource: ['pin'], pinOperation: ['getMany'], pinReturnAll: [false] },
+        },
       },
     ],
   };
@@ -233,7 +261,11 @@ export class PinInterest implements INodeType {
       const resource = this.getNodeParameter('resource', i) as string;
 
       const request = async (options: any) => {
-        const response = await this.helpers.requestOAuth2!.call(this, 'pinInterestOAuth2Api', options);
+        const response = await this.helpers.requestOAuth2!.call(
+          this,
+          'pinInterestOAuth2Api',
+          options,
+        );
         return response;
       };
 
@@ -258,7 +290,11 @@ export class PinInterest implements INodeType {
 
         if (operation === 'get') {
           const boardId = this.getNodeParameter('boardId', i) as string;
-          const res = await request({ method: 'GET', uri: `https://api.pinterest.com/v5/boards/${boardId}`, json: true });
+          const res = await request({
+            method: 'GET',
+            uri: `https://api.pinterest.com/v5/boards/${boardId}`,
+            json: true,
+          });
           returnData.push({ json: res });
         }
 
@@ -271,7 +307,9 @@ export class PinInterest implements INodeType {
             const res: any = await request({ method: 'GET', uri: url, json: true });
             collected = collected.concat(res.items ?? res.data ?? []);
             const bookmark = res.bookmark || res.next || undefined;
-            url = bookmark ? `https://api.pinterest.com/v5/boards?bookmark=${encodeURIComponent(bookmark)}` : undefined;
+            url = bookmark
+              ? `https://api.pinterest.com/v5/boards?bookmark=${encodeURIComponent(bookmark)}`
+              : undefined;
             if (!returnAll && collected.length >= limit) break;
           }
           if (!returnAll) collected = collected.slice(0, limit);
@@ -295,12 +333,20 @@ export class PinInterest implements INodeType {
             media_source = { source_type: 'image_url', url: imageUrl };
           } else if (mediaSourceMode === 'base64') {
             const base64Image = this.getNodeParameter('base64Image', i) as string;
-            media_source = { source_type: 'image_base64', content_type: 'image/jpeg', data: base64Image.replace(/^data:[^;]+;base64,/, '') };
+            media_source = {
+              source_type: 'image_base64',
+              content_type: 'image/jpeg',
+              data: base64Image.replace(/^data:[^;]+;base64,/, ''),
+            };
           } else {
             const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
             const binary = items[i].binary?.[binaryPropertyName];
             if (!binary?.data) throw new Error(`Binary property "${binaryPropertyName}" is missing`);
-            media_source = { source_type: 'image_base64', content_type: binary.mimeType || 'image/jpeg', data: binary.data };
+            media_source = {
+              source_type: 'image_base64',
+              content_type: binary.mimeType || 'image/jpeg',
+              data: binary.data,
+            };
           }
 
           const body: any = { board_id: boardId, media_source };
@@ -308,13 +354,22 @@ export class PinInterest implements INodeType {
           if (description) body.description = description;
           if (link) body.link = link;
 
-          const res = await request({ method: 'POST', uri: 'https://api.pinterest.com/v5/pins', json: true, body });
+          const res = await request({
+            method: 'POST',
+            uri: 'https://api.pinterest.com/v5/pins',
+            json: true,
+            body,
+          });
           returnData.push({ json: res });
         }
 
         if (operation === 'get') {
           const pinId = this.getNodeParameter('pinId', i) as string;
-          const res = await request({ method: 'GET', uri: `https://api.pinterest.com/v5/pins/${pinId}`, json: true });
+          const res = await request({
+            method: 'GET',
+            uri: `https://api.pinterest.com/v5/pins/${pinId}`,
+            json: true,
+          });
           returnData.push({ json: res });
         }
 
@@ -334,7 +389,11 @@ export class PinInterest implements INodeType {
             const res: any = await request({ method: 'GET', uri: url, json: true });
             collected = collected.concat(res.items ?? res.data ?? []);
             const bookmark = res.bookmark || res.next || undefined;
-            url = bookmark ? `https://api.pinterest.com/v5/boards/${boardId}/pins?bookmark=${encodeURIComponent(bookmark)}` : undefined;
+            url = bookmark
+              ? `https://api.pinterest.com/v5/boards/${boardId}/pins?bookmark=${encodeURIComponent(
+                  bookmark,
+                )}`
+              : undefined;
             if (!returnAll && collected.length >= limit) break;
           }
           if (!returnAll) collected = collected.slice(0, limit);
