@@ -11,7 +11,7 @@ export class PinInterest implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Pin-Interest',
 		name: 'pinInterest',
-		icon: 'file:pininterest.svg', // ensure the filename matches (case-sensitive on Linux/Docker)
+		icon: 'file:PinInterest.svg',
 		group: ['input'],
 		version: 1,
 		description: 'Work with Pinterest API v5 (boards & pins)',
