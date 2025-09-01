@@ -22,10 +22,8 @@
   "engines": {
     "node": ">=20.15"
   },
-
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-
   "scripts": {
     "build": "rimraf dist && tsc",
     "dev": "tsc --watch",
@@ -34,11 +32,9 @@
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint"
   },
-
   "files": [
     "dist"
   ],
-
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
@@ -48,16 +44,17 @@
       "dist/nodes/PinInterest/PinInterest.node.js"
     ]
   },
-
   "devDependencies": {
-    "@typescript-eslint/parser": "~8.32.0",
+    "n8n-workflow": "^1.0.0",
+    "@types/node": "^20.12.12",
+    "typescript": "^5.8.2",
     "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "~8.32.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "prettier": "^3.5.3",
-    "typescript": "^5.8.2",
-    "rimraf": "^6.0.1",
-    "@types/node": "^20.12.12"
+    "rimraf": "^6.0.1"
   },
-
-  "peerDependencies": {}
+  "peerDependencies": {
+    "n8n-workflow": ">=1.0.0"
+  }
 }
