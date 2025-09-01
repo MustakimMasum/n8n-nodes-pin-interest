@@ -1,16 +1,23 @@
+const fs = require('fs');
 const path = require('path');
-const { task, src, dest } = require('gulp');
+const { src, dest, series } = require('gulp');
 
-task('build:icons', copyIcons);
-
-function copyIcons() {
-	const nodeSource = path.resolve('nodes', '**', '*.{png,svg}');
-	const nodeDestination = path.resolve('dist', 'nodes');
-
-	src(nodeSource).pipe(dest(nodeDestination));
-
-	const credSource = path.resolve('credentials', '**', '*.{png,svg}');
-	const credDestination = path.resolve('dist', 'credentials');
-
-	return src(credSource).pipe(dest(credDestination));
+function copyNodeIcons() {
+  const nodeSource = path.resolve('nodes', '**', '*.{png,svg}');
+  const nodeDestination = path.resolve('dist', 'nodes');
+  // allowEmpty avoids errors if no icons exist yet
+  return src(nodeSource, { allowEmpty: true }).pipe(dest(nodeDestination));
 }
+
+function copyCredentialIcons() {
+  const credRoot = path.resolve('credentials');
+  const credSource = path.resolve(credRoot, '**', '*.{png,svg}');
+  const credDestination = path.resolve('dist', 'credentials');
+
+  // If there's no credentials directory, no-op gracefully
+  if (!fs.existsSync(credRoot)) return Promise.resolve();
+
+  return src(credSource, { allowEmpty: true }).pipe(dest(credDestination));
+}
+
+exports['build:icons'] = series(copyNodeIcons, copyCredentialIcons);
