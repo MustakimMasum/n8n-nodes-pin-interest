@@ -18,7 +18,7 @@ export class PinInterest implements INodeType {
 		defaults: { name: 'Pin-Interest' },
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
-
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'pinInterestOAuth2Api',
